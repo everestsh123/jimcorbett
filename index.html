@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#14251e">
+<title>Jim Corbett Wildlife Gallery | Rainbow Adventures</title>
+<style>
+:root{color-scheme:dark;--bg:#14251e;--card:#21372b;--gold:#e0c287;--white:#f5f5ee}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font-family:Arial,Helvetica,sans-serif}header{text-align:center;padding:36px 15px 26px}header small{color:var(--gold);letter-spacing:3px;font-weight:bold}h1{margin:12px 0 6px;font-size:clamp(27px,5vw,45px)}header p{color:#cbd7cd;margin:0}.gallery{max-width:1200px;margin:auto;padding:0 18px 35px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.photo{background:var(--card);border:0;border-radius:10px;overflow:hidden;padding:0;cursor:pointer;color:inherit;text-align:left;box-shadow:0 4px 15px #0003}.photo img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;transition:transform .25s}.photo:hover img{transform:scale(1.04)}.photo span{display:block;padding:12px 14px;font-size:14px}.photo:focus-visible,.control:focus-visible{outline:3px solid var(--gold);outline-offset:3px}.lightbox[hidden]{display:none}.lightbox{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.96);display:flex;align-items:center;justify-content:center;padding:65px 55px 75px}.lightbox figure{margin:0;text-align:center;max-width:100%;max-height:100%}.lightbox img{display:block;max-width:100%;max-height:calc(100dvh - 155px);object-fit:contain;margin:auto}.lightbox figcaption{margin-top:14px;color:#eee}.control{position:absolute;border:0;background:#ffffff22;color:#fff;border-radius:50%;width:43px;height:43px;font-size:28px;cursor:pointer}.close{top:15px;right:18px}.prev{left:8px}.next{right:8px}.counter{position:absolute;bottom:18px;color:#ccc;font-size:13px}body.modal-open{overflow:hidden}@media(max-width:750px){.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 10px 20px}.photo span{padding:9px;font-size:12px}}@media(max-width:430px){.gallery{grid-template-columns:1fr}.lightbox{padding-left:42px;padding-right:42px}.control{width:36px;height:36px}}
+</style>
+</head>
+<body>
+<header><small>RAINBOW ADVENTURES</small><h1>JIM CORBETT</h1><p>Wildlife Photography Gallery</p></header>
+<main id="gallery" class="gallery" aria-label="Wildlife photo gallery"></main>
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
+<button class="control close" id="close" aria-label="Close">&times;</button>
+<button class="control prev" id="prev" aria-label="Previous photo">&#8249;</button>
+<figure><img id="largeImage" alt=""><figcaption id="caption"></figcaption></figure>
+<button class="control next" id="next" aria-label="Next photo">&#8250;</button>
+<div id="counter" class="counter"></div>
+</div>
+<script>
+// Upload your own photos to the images folder and edit the entries below.
+const photos = [
+  {file:'images/corbett-01.jpg',title:'Bengal Tiger – Jim Corbett'},
+  {file:'images/corbett-02.jpg',title:'Elephant Herd – Dhikala'},
+  {file:'images/corbett-03.jpg',title:'Dhikala Grasslands'},
+  {file:'images/corbett-04.jpg',title:'Birdlife of Corbett'},
+  {file:'images/corbett-05.jpg',title:'Spotted Deer'},
+  {file:'images/corbett-06.jpg',title:'Ramganga River Landscape'}
+];
+const gallery=document.getElementById('gallery');
+const modal=document.getElementById('lightbox');
+const largeImage=document.getElementById('largeImage');
+const caption=document.getElementById('caption');
+const counter=document.getElementById('counter');
+let current=0,lastFocus=null,startX=null;
+photos.forEach((photo,i)=>{
+  const button=document.createElement('button');button.type='button';button.className='photo';button.setAttribute('aria-label','View '+photo.title);
+  const img=document.createElement('img');img.src=photo.file;img.alt=photo.title;img.loading='lazy';img.decoding='async';
+  const label=document.createElement('span');label.textContent=photo.title;
+  button.append(img,label);button.addEventListener('click',()=>openPhoto(i));gallery.append(button);
+});
+function showPhoto(i){current=(i+photos.length)%photos.length;largeImage.src=photos[current].file;largeImage.alt=photos[current].title;caption.textContent=photos[current].title;counter.textContent=`${current+1} / ${photos.length}`;}
+function openPhoto(i){lastFocus=document.activeElement;showPhoto(i);modal.hidden=false;document.body.classList.add('modal-open');document.getElementById('close').focus();}
+function closePhoto(){modal.hidden=true;document.body.classList.remove('modal-open');largeImage.removeAttribute('src');if(lastFocus)lastFocus.focus();}
+document.getElementById('close').addEventListener('click',closePhoto);
+document.getElementById('prev').addEventListener('click',()=>showPhoto(current-1));
+document.getElementById('next').addEventListener('click',()=>showPhoto(current+1));
+modal.addEventListener('click',e=>{if(e.target===modal)closePhoto();});
+document.addEventListener('keydown',e=>{if(modal.hidden)return;if(e.key==='Escape')closePhoto();else if(e.key==='ArrowRight')showPhoto(current+1);else if(e.key==='ArrowLeft')showPhoto(current-1);else if(e.key==='Tab'){const controls=[document.getElementById('close'),document.getElementById('prev'),document.getElementById('next')];let next=controls.indexOf(document.activeElement)+(e.shiftKey?-1:1);e.preventDefault();controls[(next+controls.length)%controls.length].focus();}});
+modal.addEventListener('touchstart',e=>{startX=e.changedTouches[0].screenX;},{passive:true});
+modal.addEventListener('touchend',e=>{if(startX===null)return;const dx=e.changedTouches[0].screenX-startX;if(Math.abs(dx)>55)showPhoto(current+(dx<0?1:-1));startX=null;},{passive:true});
+</script>
+</body>
+</html>
